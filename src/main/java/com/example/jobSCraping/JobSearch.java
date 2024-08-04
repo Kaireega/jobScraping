@@ -1,17 +1,17 @@
 package com.example.jobSCraping;
-
-import ch.qos.logback.core.net.SyslogOutputStream;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
+import org.openqa.selenium.NoSuchElementException;
+
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.NoSuchElementException;
 
 import static java.lang.Thread.sleep;
+
 
 public class JobSearch {
 

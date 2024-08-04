@@ -33,6 +33,18 @@ dependencies {
 	testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 	implementation ("org.seleniumhq.selenium:selenium-java:4.3.0")
 	implementation ("org.jsoup:jsoup:1.15.3")
+	// Selenium
+	implementation ("org.seleniumhq.selenium:selenium-java:4.23.0")
+
+	// JUnit
+	testImplementation ("org.junit.jupiter:junit-jupiter-api:5.11.0")
+	testRuntimeOnly ("org.junit.jupiter:junit-jupiter-engine:5.11.0")
+
+	// Mockito
+	testImplementation ("org.mockito:mockito-core:5.12.0")
+
+	// Assertions
+	testImplementation ("org.assertj:assertj-core:3.26.3")
 
 
 }
