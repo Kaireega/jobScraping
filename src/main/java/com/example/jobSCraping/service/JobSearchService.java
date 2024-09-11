@@ -1,26 +1,34 @@
+
 package com.example.jobSCraping.service;
+
 import com.example.jobSCraping.model.Job;
-import org.openqa.selenium.By;
-import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.WebElement;
+import com.example.jobSCraping.repository.JobRepo;
+import org.openqa.selenium.*;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
-import org.openqa.selenium.NoSuchElementException;
+import org.springframework.stereotype.Service;
 
 import java.time.Duration;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
+import java.util.ArrayList;
 
 import static java.lang.Thread.sleep;
 
 
-public class JobSearch {
+@Service
+public class JobSearchService {
 
-    public List<Job>  performJobSearch(WebDriver driver, String jobTitle, int numberOfPages) throws InterruptedException {
+    private final JobRepo jobRepo;
 
+    public JobSearchService(JobRepo jobRepo){
+        this.jobRepo = jobRepo;
+    }
+
+
+    public List<Job> performJobSearch(WebDriver driver, String jobTitle, int numberOfPages) throws InterruptedException {
+        driver.manage().window().setSize(new Dimension(1024, 768));
         // Navigate to Indeed homepage
-        driver.get("https://www.indeed.com");
+        driver.get("https://www.indeed.com/?from=gnav-homepage");
 
         // Wait until the input field is present
         WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
@@ -43,6 +51,8 @@ public class JobSearch {
         String companyName ="";
         List<Job> jobListings = new ArrayList<>();
 
+
+
         while (currentPage <= numberOfPages) {
             // Find the job listings container
             WebElement jobCardsContainer = driver.findElement(By.id("mosaic-provider-jobcards"));
@@ -59,8 +69,8 @@ public class JobSearch {
                         WebElement jobTitleElement = job.findElement(By.cssSelector("h2.jobTitle"));
                         WebElement aTag = jobTitleElement.findElement(By.tagName("a"));
                         WebElement spanTag = aTag.findElement(By.tagName("span"));
-                         titleText = spanTag.getAttribute("title");
-                         jobHref = aTag.getAttribute("href");
+                        titleText = spanTag.getAttribute("title");
+                        jobHref = aTag.getAttribute("href");
                         System.out.println("Job Title: " + titleText);
                         System.out.println("Job Link: " + jobHref);
                     } else {
@@ -73,42 +83,10 @@ public class JobSearch {
                     if (!job.findElements(By.cssSelector("div.company_location")).isEmpty()) {
                         WebElement companyLocationElement = job.findElement(By.cssSelector("div.company_location"));
                         WebElement companyNameSpan = companyLocationElement.findElement(By.cssSelector("span"));
-                         companyName = companyNameSpan.getText();
+                        companyName = companyNameSpan.getText();
                         System.out.println("Company Name: " + companyName);
                     }
 
-
-                    
-                    // Check if the <li> element contains an <h2> tag with the class "jobTitle"
-                    // finds the <h2> that contains the job Title and clicks the element
-//                    if (!job.findElements(By.cssSelector("h2.jobTitle")).isEmpty()) {
-//                        WebElement jobTitleElement = job.findElement(By.cssSelector("h2.jobTitle"));
-//                        WebElement aTag = jobTitleElement.findElement(By.tagName("a"));
-//                        String jobUrl = aTag.getAttribute("href");
-//
-//                        // Store the current window handle
-//                        String originalWindow = driver.getWindowHandle();
-//
-//                        // Switch to the new tab
-//                        Set<String> handles=driver.getWindowHandles();
-//                        for(String actual: handles) {
-//                            if(!actual.equalsIgnoreCase(originalWindow)) {
-////Switch to the opened tab
-//                                driver.switchTo().window(actual);
-////opening the URL saved.
-//                                driver.get(jobUrl);
-//                                sleep(5000);  // Optional: Wait for the new tab to load
-//
-//                            }
-//                        }
-//                        // Now that we're in the new tab, proceed to find the button
-//                        WebElement jobDescription = wait.until(ExpectedConditions.elementToBeClickable(By.cssSelector("button.css-14vv265.e37uo190")));
-//                        sleep(5000);  // Optional: Ensure the button is ready to be clicked
-//                        jobDescription.click();
-//                        // Optionally, switch back to the original window/tab after you're done
-//                        driver.close();  // Close the new tab
-//                        driver.switchTo().window(originalWindow);
-//                    }
                 }
                 catch (NoSuchElementException e) {
                     // Skip to the next iteration if any element is not found
@@ -118,20 +96,24 @@ public class JobSearch {
                 catch (Exception e) {
                     System.out.println("General error: " + e.getMessage());
                 }
+                jobListings.add(new Job(titleText, companyName, jobHref));
+            } try {
+                WebElement nextPageButton = driver.findElement(By.cssSelector("a[data-testid='pagination-page-next']"));
+                nextPageButton.click();
+                // Wait for the next page to load
+                sleep(5000); // Adjust sleep time as needed
+                currentPage++;
+            } catch (NoSuchElementException e) {
+                System.out.println("Next page button not found. Ending pagination.");
+                break;
+            }
 
-                } try {
-                    WebElement nextPageButton = driver.findElement(By.cssSelector("a[data-testid='pagination-page-next']"));
-                    nextPageButton.click();
-                    // Wait for the next page to load
-                    sleep(5000); // Adjust sleep time as needed
-                    currentPage++;
-                } catch (NoSuchElementException e) {
-                    System.out.println("Next page button not found. Ending pagination.");
-                    break;
-                }
-            jobListings.add(new Job(titleText, companyName, jobHref));
-        }
+    }
         return jobListings;
     }
 
+
+    public void saveJobsToDatabase(List<Job> jobListings) {        // Save job listings to the database
+        jobRepo.saveAll(jobListings);
+    }
 }

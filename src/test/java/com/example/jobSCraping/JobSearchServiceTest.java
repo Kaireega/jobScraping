@@ -1,6 +1,6 @@
 package com.example.jobSCraping;
 import com.example.jobSCraping.model.Job;
-import com.example.jobSCraping.service.JobSearch;
+import com.example.jobSCraping.service.JobSearchService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -16,11 +16,11 @@ import java.util.List;
 
 import static org.mockito.Mockito.*;
 
-class JobSearchTest {
+class JobSearchServiceTest {
     // Class variables
     private WebDriver driver;
     private WebDriverWait wait;
-    private JobSearch jobSearch;
+    private JobSearchService jobSearchService;
 
     @BeforeEach
     public void setUp() {
@@ -31,7 +31,7 @@ class JobSearchTest {
         wait = new WebDriverWait(driver, Duration.ofSeconds(10)); // Corrected to assign to the class variable
 
         // Initialize the JobSearch object with the mocked driver and wait
-        jobSearch = new JobSearch();  // This ensures jobSearch is properly initialized
+//        jobSearchService = new JobSearchService();  // This ensures jobSearch is properly initialized
     }
 
 
@@ -82,7 +82,7 @@ class JobSearchTest {
         doNothing().when(nextPageButton).click();
 
         // Perform the job search
-        List<Job> jobListings = jobSearch.performJobSearch(driver, jobTitle, numberOfPages);
+        List<Job> jobListings = jobSearchService.performJobSearch(driver, jobTitle, numberOfPages);
 
 //        // Verify the results
 //        assertEquals(1, jobListings.size());
